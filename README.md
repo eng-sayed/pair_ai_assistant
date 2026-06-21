@@ -37,7 +37,7 @@ dependencies:
 dependencies:
   pair_ai_assistant:
     git:
-      url: https://github.com/YOUR_ORG/pair_ai_assistant.git
+      url: https://github.com/eng-sayed/pair_ai_assistant.git
       ref: main
 ```
 
