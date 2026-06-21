@@ -9,6 +9,7 @@ import '../config/pair_ai_embed_config.dart';
 import '../html/pair_ai_embed_scripts.dart';
 import '../html/pair_ai_html_shell.dart';
 import '../utils/pair_ai_logger.dart';
+import '../utils/pair_ai_navigation_guard.dart';
 import 'pair_ai_permission_handler.dart';
 
 /// Creates and configures a [WebViewController] for Pair AI embeds.
@@ -29,6 +30,12 @@ class PairAiWebViewFactory {
   final void Function(String url) onPageFinished;
   final PairAiPermissionHandler _permissionHandler;
   final PairAiAndroidFileSelector _androidFileSelector;
+  bool _disposed = false;
+
+  /// Cancels pending deferred work such as Arabic font re-injection.
+  void dispose() {
+    _disposed = true;
+  }
 
   /// Builds a configured [WebViewController].
   WebViewController create() {
@@ -76,8 +83,20 @@ class PairAiWebViewFactory {
         );
     }
 
+    final PairAiNavigationGuard navigationGuard = PairAiNavigationGuard(
+      config.allowedNavigationOrigins,
+    );
+
     controller.setNavigationDelegate(
       NavigationDelegate(
+        onNavigationRequest: (NavigationRequest request) {
+          if (!config.restrictNavigation ||
+              navigationGuard.isAllowed(request.url)) {
+            return NavigationDecision.navigate;
+          }
+          logger.log('navigation:blocked: ${request.url}');
+          return NavigationDecision.prevent;
+        },
         onPageStarted: (String url) => logger.log('page:start: $url'),
         onPageFinished: (String url) {
           logger.log('page:finished: $url');
@@ -130,6 +149,9 @@ class PairAiWebViewFactory {
     }
 
     void inject() {
+      if (_disposed) {
+        return;
+      }
       unawaited(
         controller.runJavaScript(PairAiEmbedScripts.arabicFontFixJs),
       );

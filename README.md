@@ -4,7 +4,7 @@
 
 Embed the **Pair AI assistant widget** in any Flutter app via a `WebView`. Paste the Pair embed `<script>` **verbatim** — the package handles microphone permissions, camera capture, file uploads (Android bridge + iOS native picker), Arabic font rendering, and iframe media permissions.
 
-![Chat screenshot placeholder](docs/screenshot_chat.png)
+> **Supported platforms:** Android and iOS only (uses `dart:io` and native WebView bridges).
 
 ## What this package does
 
@@ -22,6 +22,13 @@ Pair ships a web embed script for browsers. Mobile apps need a native WebView br
 - Optional debug bridge (`PairAssistantDebug` channel)
 
 ## Installation
+
+### pub.dev
+
+```yaml
+dependencies:
+  pair_ai_assistant: ^0.1.0
+```
 
 ### Path dependency (monorepo)
 
@@ -155,8 +162,10 @@ class SupportScreen extends StatelessWidget {
 | `enableDebugBridge` | `bool` | `false` | Bridge logs to Dart |
 | `debugLogTag` | `String` | `PairAiAssistant` | Log prefix |
 | `resizeToAvoidBottomInset` | `bool` | `true` | Scaffold keyboard resize |
-| `htmlLang` | `String` | `ar` | HTML `lang` attribute |
-| `extraHeadHtml` | `String?` | `null` | Extra `<head>` markup |
+| `htmlLang` | `String` | `ar` | HTML `lang` attribute (BCP 47, e.g. `ar`, `en`) |
+| `extraHeadHtml` | `String?` | `null` | Extra `<head>` markup (trusted content only) |
+| `restrictNavigation` | `bool` | `true` | Block WebView navigation outside allowed origins |
+| `allowedNavigationOrigins` | `List<String>?` | `baseUrl` origin | Extra origins for WebView navigation |
 
 ## Troubleshooting
 
@@ -179,6 +188,13 @@ class SupportScreen extends StatelessWidget {
 | `android:file-selector:open` | User tapped attach (+) |
 | `page:finished: https://...` | HTML shell loaded |
 | `debug:installed` | Debug bridge active (if enabled) |
+
+## Security notes
+
+- Keep `enableDebugBridge: false` in production — it logs network response previews.
+- Only pass trusted markup to `extraHeadHtml`.
+- Navigation is restricted to [baseUrl] origin by default; add origins via `allowedNavigationOrigins` if needed.
+- Microphone/camera permissions are requested when the WebView needs them, not at widget startup.
 
 ## Limitations
 

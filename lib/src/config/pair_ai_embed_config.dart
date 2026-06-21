@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../utils/pair_ai_navigation_guard.dart';
+
 /// Configuration for embedding a Pair AI widget script inside a WebView.
 @immutable
 class PairAiEmbedConfig {
+  static final RegExp _htmlLangPattern = RegExp(r'^[a-zA-Z]{2,3}(-[a-zA-Z]{2,8})*$');
+
   /// Creates a validated embed configuration.
   ///
-  /// Throws [AssertionError] when [embedScript] is empty or [baseUrl] is not
-  /// an HTTP(S) URL.
+  /// Throws [AssertionError] when [embedScript] is empty, [baseUrl] is not
+  /// an HTTP(S) URL, or [htmlLang] is not a valid BCP 47 language tag.
   factory PairAiEmbedConfig({
     required String embedScript,
     required String baseUrl,
@@ -19,6 +23,8 @@ class PairAiEmbedConfig {
     bool resizeToAvoidBottomInset = true,
     String htmlLang = 'ar',
     String? extraHeadHtml,
+    bool restrictNavigation = true,
+    List<String>? allowedNavigationOrigins,
   }) {
     assert(
       embedScript.trim().isNotEmpty,
@@ -28,6 +34,16 @@ class PairAiEmbedConfig {
       baseUrl.startsWith('http://') || baseUrl.startsWith('https://'),
       'baseUrl must start with http:// or https://',
     );
+    assert(
+      _htmlLangPattern.hasMatch(htmlLang),
+      'htmlLang must be a valid BCP 47 language tag (e.g. ar, en, ar-SA)',
+    );
+
+    final Uri baseUri = Uri.parse(baseUrl);
+    final Set<String> origins = <String>{
+      PairAiNavigationGuard.originForUri(baseUri),
+      if (allowedNavigationOrigins != null) ...allowedNavigationOrigins,
+    };
 
     return PairAiEmbedConfig._(
       embedScript: embedScript,
@@ -41,6 +57,8 @@ class PairAiEmbedConfig {
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       htmlLang: htmlLang,
       extraHeadHtml: extraHeadHtml,
+      restrictNavigation: restrictNavigation,
+      allowedNavigationOrigins: origins,
     );
   }
 
@@ -56,6 +74,8 @@ class PairAiEmbedConfig {
     required this.resizeToAvoidBottomInset,
     required this.htmlLang,
     this.extraHeadHtml,
+    required this.restrictNavigation,
+    required this.allowedNavigationOrigins,
   });
 
   /// The complete Pair embed `<script>` block, pasted verbatim from Pair.
@@ -89,5 +109,13 @@ class PairAiEmbedConfig {
   final String htmlLang;
 
   /// Optional extra markup injected inside `<head>`.
+  ///
+  /// Only pass trusted markup — it is injected verbatim into the HTML shell.
   final String? extraHeadHtml;
+
+  /// When `true`, WebView navigation is limited to [allowedNavigationOrigins].
+  final bool restrictNavigation;
+
+  /// Origins allowed for WebView navigation (defaults to [baseUrl] origin).
+  final Set<String> allowedNavigationOrigins;
 }

@@ -6,3 +6,6 @@
 - Arabic font fix with Noto Sans Arabic
 - Automatic iframe `allow="microphone; camera"` injection
 - Optional debug bridge channel `PairAssistantDebug`
+- WebView navigation restricted to allowed origins (defaults to `baseUrl`)
+- BCP 47 validation for `htmlLang`
+- Microphone permission requested on WebView demand (not at startup)

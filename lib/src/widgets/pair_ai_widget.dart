@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../config/pair_ai_embed_config.dart';
@@ -47,16 +46,16 @@ class _PairAiWidgetState extends State<PairAiWidget> {
       logger: _logger,
       onPageFinished: (String url) => widget.onPageFinished?.call(url),
     );
-    unawaited(_ensureMicrophonePermission());
     _controller = _factory.create();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_factory.configurePlatform(_controller));
     });
   }
 
-  Future<void> _ensureMicrophonePermission() async {
-    final PermissionStatus status = await Permission.microphone.request();
-    _logger.log('app:microphone-permission: $status');
+  @override
+  void dispose() {
+    _factory.dispose();
+    super.dispose();
   }
 
   @override
