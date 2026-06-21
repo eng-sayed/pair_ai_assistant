@@ -1,0 +1,6 @@
+<key>NSMicrophoneUsageDescription</key>
+<string>Used to record voice messages in the AI assistant chat.</string>
+<key>NSCameraUsageDescription</key>
+<string>Used to capture photos and videos in the AI assistant chat.</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Used to attach photos in the AI assistant chat.</string>
