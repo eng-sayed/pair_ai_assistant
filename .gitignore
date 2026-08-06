@@ -17,3 +17,11 @@ pubspec.lock
 
 # Coverage
 coverage/
+
+# Native SDK build artifacts
+sdks/android/.gradle/
+sdks/android/**/build/
+sdks/android/local.properties
+sdks/ios/.build/
+sdks/ios/**/DerivedData/
+sdks/ios/**/*.xcworkspace/xcuserdata
