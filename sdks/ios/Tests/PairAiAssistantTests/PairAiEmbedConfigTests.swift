@@ -65,6 +65,7 @@ final class PairAiEmbedConfigTests: XCTestCase {
         XCTAssertTrue(config.enableArabicFontFix)
         XCTAssertTrue(config.enableIframeMediaPermissions)
         XCTAssertFalse(config.enableDebugBridge)
+        XCTAssertFalse(config.enableEventBridge)
         XCTAssertEqual(config.debugLogTag, "PairAiAssistant")
         XCTAssertTrue(config.resizeToAvoidBottomInset)
         XCTAssertEqual(config.htmlLang, "ar")

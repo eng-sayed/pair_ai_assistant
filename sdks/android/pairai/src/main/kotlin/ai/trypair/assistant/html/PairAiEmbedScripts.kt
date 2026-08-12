@@ -326,6 +326,66 @@ object PairAiEmbedScripts {
 })();
 """
 
+    /** Ported from Flutter pair_ai_embed_scripts.dart. */
+    fun eventBridgeJs(allowedOrigins: Collection<String>): String {
+        val originsJson = org.json.JSONArray(allowedOrigins.toList()).toString()
+        return """
+(function () {
+  if (window.__PAIR_AI_ASSISTANT_EVENTS__) return;
+  window.__PAIR_AI_ASSISTANT_EVENTS__ = true;
+
+  var allowedOrigins = $originsJson;
+
+  function isAllowed(origin) {
+    if (!origin) return false;
+    for (var i = 0; i < allowedOrigins.length; i++) {
+      if (allowedOrigins[i] === origin) return true;
+    }
+    return false;
+  }
+
+  function normalize(data) {
+    if (data == null) return null;
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch (e) { return null; }
+    }
+    if (typeof data !== 'object') return null;
+    return data;
+  }
+
+  function postNative(message) {
+    try {
+      if (window.PairAssistantEvents && window.PairAssistantEvents.postMessage) {
+        window.PairAssistantEvents.postMessage(message);
+        return;
+      }
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.PairAssistantEvents) {
+        window.webkit.messageHandlers.PairAssistantEvents.postMessage(message);
+      }
+    } catch (e) {}
+  }
+
+  window.addEventListener('message', function (event) {
+    if (!isAllowed(event.origin)) return;
+    var data = normalize(event.data);
+    if (!data) return;
+    var type = data.type;
+    if (typeof type !== 'string') return;
+    if (type.indexOf('widget:') !== 0 && type.indexOf('form:') !== 0) return;
+
+    try {
+      postNative(JSON.stringify({
+        type: type,
+        data: data,
+        origin: event.origin,
+        ts: new Date().toISOString()
+      }));
+    } catch (e) {}
+  });
+})();
+"""
+    }
+
     /** Ported verbatim from Flutter pair_ai_embed_scripts.dart. */
     const val arabicFontFixJs = """(function () {
   var css = "*{font-family:'Noto Sans Arabic','Geeza Pro','Baghdad','Damascus','Arial Unicode MS',Tahoma,'Helvetica Neue',Helvetica,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,ui-sans-serif,system-ui,sans-serif!important;}input,textarea,[contenteditable='true']{font-family:inherit!important;}";

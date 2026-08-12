@@ -49,8 +49,17 @@ PairAiWidgetScreen(
   ),
   appBar: AppBar(title: const Text('Support')),
   onDebugLog: debugPrint,
+  onEvent: (PairAiWidgetEvent event) {
+    debugPrint('[PairAiEvent] ${event.type} ${event.data}');
+  },
 )
 ```
+
+## Widget events
+
+`onEvent` receives `PairAiWidgetEvent` (`type`, `data`, `origin`, `timestamp`). Passing `onEvent` turns the forwarder on automatically.
+
+Typical types: `widget:ready`, `widget:close`, `widget:unreadCount`, `widget:previewMessage`, `widget:requestTokenRefresh`. See [README.md](README.md#widget-events) for the full list.
 
 ## Troubleshooting
 
@@ -71,5 +80,6 @@ PairAiWidgetScreen(
 - [ ] `baseUrl` matches script `BASE_URL`
 - [ ] Reinstall on Android after permission changes
 - [ ] Test mic, attach (+), and text input on real devices
+- [ ] Optional: handle `onEvent` (`widget:ready`, `widget:close`, …)
 
 See `example/` for a working demo.

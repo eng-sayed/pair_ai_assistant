@@ -21,6 +21,7 @@ void main() {
     expect(html, contains(embedScript));
     expect(html, contains('Noto+Sans+Arabic'));
     expect(html, isNot(contains('__PAIR_AI_ASSISTANT_DEBUG__')));
+    expect(html, isNot(contains('__PAIR_AI_ASSISTANT_EVENTS__')));
   });
 
   test('debug bridge script is injected when enabled', () {

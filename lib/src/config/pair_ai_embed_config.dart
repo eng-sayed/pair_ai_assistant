@@ -19,6 +19,7 @@ class PairAiEmbedConfig {
     bool enableArabicFontFix = true,
     bool enableIframeMediaPermissions = true,
     bool enableDebugBridge = false,
+    bool enableEventBridge = false,
     String debugLogTag = 'PairAiAssistant',
     bool resizeToAvoidBottomInset = true,
     String htmlLang = 'ar',
@@ -53,6 +54,7 @@ class PairAiEmbedConfig {
       enableArabicFontFix: enableArabicFontFix,
       enableIframeMediaPermissions: enableIframeMediaPermissions,
       enableDebugBridge: enableDebugBridge,
+      enableEventBridge: enableEventBridge,
       debugLogTag: debugLogTag,
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       htmlLang: htmlLang,
@@ -70,6 +72,7 @@ class PairAiEmbedConfig {
     required this.enableArabicFontFix,
     required this.enableIframeMediaPermissions,
     required this.enableDebugBridge,
+    required this.enableEventBridge,
     required this.debugLogTag,
     required this.resizeToAvoidBottomInset,
     required this.htmlLang,
@@ -98,6 +101,11 @@ class PairAiEmbedConfig {
 
   /// Bridge console/network/media logs to Dart via `PairAssistantDebug`.
   final bool enableDebugBridge;
+
+  /// Inject the internal widget-event forwarder.
+  ///
+  /// Also turns on automatically when `onEvent` is passed to [PairAiWidget].
+  final bool enableEventBridge;
 
   /// Prefix for debug log lines.
   final String debugLogTag;

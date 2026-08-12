@@ -1,9 +1,9 @@
-/// Pair embed script used to exercise `onEvent` against widgets-test.
-const String kPairAiUserId = '';
-const String kPairAiWidgetId = '01KX2WEEF10SJ1ET7QNMA9XFJV';
-const String kPairAiBaseUrl = 'https://widgets-test.trypair.ai';
+import Foundation
 
-String get kPairAiEmbedScript => '''
+let kPairAiBaseUrl = "https://widgets-test.trypair.ai"
+
+/// Pair embed script used to exercise `onEvent` against widgets-test.
+let kPairAiEmbedScript = #"""
 <script>
       window.PairAiWidgetSettings = {
         position: 'right',
@@ -11,7 +11,7 @@ String get kPairAiEmbedScript => '''
         launcherTitle: 'Chat with us',
       }
       ;(function (d, t) {
-        var BASE_URL = '$kPairAiBaseUrl'
+        var BASE_URL = 'https://widgets-test.trypair.ai'
         var g = d.createElement(t),
           s = d.getElementsByTagName(t)[0]
         g.src = BASE_URL + '/sdk.js'
@@ -19,10 +19,10 @@ String get kPairAiEmbedScript => '''
         s.parentNode.insertBefore(g, s)
         g.onload = function () {
           window.PairAiWidgetSDK.run({
-            widgetId: '$kPairAiWidgetId',
+            widgetId: '01KX2WEEF10SJ1ET7QNMA9XFJV',
             baseUrl: BASE_URL,
           })
         }
       })(document, 'script')
 </script>
-''';
+"""#

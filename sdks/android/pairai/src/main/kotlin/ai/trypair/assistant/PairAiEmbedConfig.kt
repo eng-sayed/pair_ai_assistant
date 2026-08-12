@@ -21,6 +21,7 @@ data class PairAiEmbedConfig(
     val enableArabicFontFix: Boolean = true,
     val enableIframeMediaPermissions: Boolean = true,
     val enableDebugBridge: Boolean = false,
+    val enableEventBridge: Boolean = false,
     val debugLogTag: String = "PairAiAssistant",
     val resizeToAvoidBottomInset: Boolean = true,
     val htmlLang: String = "ar",
@@ -38,6 +39,7 @@ data class PairAiEmbedConfig(
         private var enableArabicFontFix: Boolean = true
         private var enableIframeMediaPermissions: Boolean = true
         private var enableDebugBridge: Boolean = false
+        private var enableEventBridge: Boolean = false
         private var debugLogTag: String = "PairAiAssistant"
         private var resizeToAvoidBottomInset: Boolean = true
         private var htmlLang: String = "ar"
@@ -52,6 +54,7 @@ data class PairAiEmbedConfig(
         fun enableArabicFontFix(value: Boolean) = apply { enableArabicFontFix = value }
         fun enableIframeMediaPermissions(value: Boolean) = apply { enableIframeMediaPermissions = value }
         fun enableDebugBridge(value: Boolean) = apply { enableDebugBridge = value }
+        fun enableEventBridge(value: Boolean) = apply { enableEventBridge = value }
         fun debugLogTag(value: String) = apply { debugLogTag = value }
         fun resizeToAvoidBottomInset(value: Boolean) = apply { resizeToAvoidBottomInset = value }
         fun htmlLang(value: String) = apply { htmlLang = value }
@@ -67,6 +70,7 @@ data class PairAiEmbedConfig(
             enableArabicFontFix = enableArabicFontFix,
             enableIframeMediaPermissions = enableIframeMediaPermissions,
             enableDebugBridge = enableDebugBridge,
+            enableEventBridge = enableEventBridge,
             debugLogTag = debugLogTag,
             resizeToAvoidBottomInset = resizeToAvoidBottomInset,
             htmlLang = htmlLang,
@@ -94,6 +98,7 @@ data class PairAiEmbedConfig(
             enableArabicFontFix: Boolean = true,
             enableIframeMediaPermissions: Boolean = true,
             enableDebugBridge: Boolean = false,
+            enableEventBridge: Boolean = false,
             debugLogTag: String = "PairAiAssistant",
             resizeToAvoidBottomInset: Boolean = true,
             htmlLang: String = "ar",
@@ -123,6 +128,7 @@ data class PairAiEmbedConfig(
                 enableArabicFontFix = enableArabicFontFix,
                 enableIframeMediaPermissions = enableIframeMediaPermissions,
                 enableDebugBridge = enableDebugBridge,
+                enableEventBridge = enableEventBridge,
                 debugLogTag = debugLogTag,
                 resizeToAvoidBottomInset = resizeToAvoidBottomInset,
                 htmlLang = htmlLang,

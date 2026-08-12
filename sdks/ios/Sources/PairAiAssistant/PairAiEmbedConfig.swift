@@ -27,6 +27,11 @@ public struct PairAiEmbedConfig: Sendable {
     /// Bridge console/network/media logs to native via `PairAssistantDebug`.
     public let enableDebugBridge: Bool
 
+    /// Inject the internal widget-event forwarder.
+    ///
+    /// Also turns on automatically when `onEvent` is passed to `PairAiWebView`.
+    public let enableEventBridge: Bool
+
     /// Prefix for debug log lines.
     public let debugLogTag: String
 
@@ -59,6 +64,7 @@ public struct PairAiEmbedConfig: Sendable {
         enableArabicFontFix: Bool = true,
         enableIframeMediaPermissions: Bool = true,
         enableDebugBridge: Bool = false,
+        enableEventBridge: Bool = false,
         debugLogTag: String = "PairAiAssistant",
         resizeToAvoidBottomInset: Bool = true,
         htmlLang: String = "ar",
@@ -96,6 +102,7 @@ public struct PairAiEmbedConfig: Sendable {
         self.enableArabicFontFix = enableArabicFontFix
         self.enableIframeMediaPermissions = enableIframeMediaPermissions
         self.enableDebugBridge = enableDebugBridge
+        self.enableEventBridge = enableEventBridge
         self.debugLogTag = debugLogTag
         self.resizeToAvoidBottomInset = resizeToAvoidBottomInset
         self.htmlLang = htmlLang

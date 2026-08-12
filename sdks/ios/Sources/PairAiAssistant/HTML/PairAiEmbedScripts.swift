@@ -1,3 +1,5 @@
+import Foundation
+
 /// JavaScript helpers injected into the HTML shell before the embed script.
 enum PairAiEmbedScripts {
     /// Adds `allow="microphone; camera"` on dynamically created iframes.
@@ -326,6 +328,76 @@ enum PairAiEmbedScripts {
 })();
 
 """
+
+    /// Forwards origin-checked widget/form events to native.
+    static func eventBridgeJs(allowedOrigins: [String]) -> String {
+        let originsJson: String
+        if let data = try? JSONSerialization.data(
+            withJSONObject: allowedOrigins,
+            options: [.withoutEscapingSlashes]
+        ),
+           let json = String(data: data, encoding: .utf8) {
+            originsJson = json
+        } else {
+            originsJson = "[]"
+        }
+
+        return """
+(function () {
+  if (window.__PAIR_AI_ASSISTANT_EVENTS__) return;
+  window.__PAIR_AI_ASSISTANT_EVENTS__ = true;
+
+  var allowedOrigins = \(originsJson);
+
+  function isAllowed(origin) {
+    if (!origin) return false;
+    for (var i = 0; i < allowedOrigins.length; i++) {
+      if (allowedOrigins[i] === origin) return true;
+    }
+    return false;
+  }
+
+  function normalize(data) {
+    if (data == null) return null;
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch (e) { return null; }
+    }
+    if (typeof data !== 'object') return null;
+    return data;
+  }
+
+  function postNative(message) {
+    try {
+      if (window.PairAssistantEvents && window.PairAssistantEvents.postMessage) {
+        window.PairAssistantEvents.postMessage(message);
+        return;
+      }
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.PairAssistantEvents) {
+        window.webkit.messageHandlers.PairAssistantEvents.postMessage(message);
+      }
+    } catch (e) {}
+  }
+
+  window.addEventListener('message', function (event) {
+    if (!isAllowed(event.origin)) return;
+    var data = normalize(event.data);
+    if (!data) return;
+    var type = data.type;
+    if (typeof type !== 'string') return;
+    if (type.indexOf('widget:') !== 0 && type.indexOf('form:') !== 0) return;
+
+    try {
+      postNative(JSON.stringify({
+        type: type,
+        data: data,
+        origin: event.origin,
+        ts: new Date().toISOString()
+      }));
+    } catch (e) {}
+  });
+})();
+"""
+    }
 
     /// Re-applies Arabic font CSS in the document and child iframes.
     static let arabicFontFixJs = """

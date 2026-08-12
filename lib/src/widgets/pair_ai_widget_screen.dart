@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../config/pair_ai_embed_config.dart';
+import '../events/pair_ai_widget_event.dart';
 import 'pair_ai_widget.dart';
 
 /// Full-screen scaffold wrapper around [PairAiWidget].
@@ -12,6 +13,7 @@ class PairAiWidgetScreen extends StatelessWidget {
     this.appBar,
     this.onDebugLog,
     this.onPageFinished,
+    this.onEvent,
   });
 
   /// Embed configuration including the verbatim Pair script.
@@ -26,6 +28,9 @@ class PairAiWidgetScreen extends StatelessWidget {
   /// Called when the HTML shell finishes loading.
   final void Function(String url)? onPageFinished;
 
+  /// Called when the widget iframe posts a `widget:` or `form:` event.
+  final void Function(PairAiWidgetEvent event)? onEvent;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,6 +40,7 @@ class PairAiWidgetScreen extends StatelessWidget {
         config: config,
         onDebugLog: onDebugLog,
         onPageFinished: onPageFinished,
+        onEvent: onEvent,
       ),
     );
   }

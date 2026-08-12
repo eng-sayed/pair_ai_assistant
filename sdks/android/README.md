@@ -1,6 +1,6 @@
 # Pair AI Assistant — Android SDK
 
-**v0.1.0** | `minSdk 24` | Kotlin | AAR / Maven
+**v0.2.0** | `minSdk 24` | Kotlin | AAR / Maven
 
 Standalone Android library that embeds the Pair AI assistant widget in a native `WebView`, with feature parity to the [Flutter package](../../README.md).
 
@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    implementation("ai.trypair:pair-ai-assistant:0.1.0")
+    implementation("ai.trypair:pair-ai-assistant:0.2.0")
 }
 ```
 
@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.eng-sayed.pair_ai_assistant:pairai:0.1.0")
+    implementation("com.github.eng-sayed.pair_ai_assistant:pairai:0.2.0")
 }
 ```
 
@@ -71,6 +71,9 @@ val webView = PairAiWebView(
     context = this,
     config = config,
     host = this, // Activity or Fragment implementing ActivityResultCaller
+    onEvent = { event ->
+        Log.d("PairAiEvent", "${event.type} ${event.data}")
+    },
 )
 setContentView(webView)
 ```
@@ -85,7 +88,15 @@ startActivity(PairAiActivity.newIntent(this, config))
 
 ```kotlin
 supportFragmentManager.beginTransaction()
-    .replace(R.id.container, PairAiFragment.newInstance(config))
+    .replace(
+        R.id.container,
+        PairAiFragment.newInstance(
+            config,
+            onEvent = { event ->
+                Log.d("PairAiEvent", "${event.type} ${event.data}")
+            },
+        ),
+    )
     .commit()
 ```
 
@@ -97,7 +108,19 @@ PairAiEmbedConfig config = new PairAiEmbedConfig.Builder()
     .baseUrl("https://widgets.trypair.ai")
     .build();
 
-PairAiWebView webView = new PairAiWebView(this, config, this, null, null, null);
+PairAiWebView webView = new PairAiWebView(
+    this,
+    config,
+    this,
+    null,
+    0,
+    null,
+    null,
+    event -> {
+        Log.d("PairAiEvent", event.getType() + " " + event.getData());
+        return kotlin.Unit.INSTANCE;
+    }
+);
 setContentView(webView);
 ```
 
@@ -112,6 +135,7 @@ setContentView(webView);
 | `enableArabicFontFix` | `true` | Noto Sans Arabic + bilingual font stack |
 | `enableIframeMediaPermissions` | `true` | Injects iframe `allow="microphone; camera"` |
 | `enableDebugBridge` | `false` | `PairAssistantDebug` JS → logcat / callback |
+| `enableEventBridge` | `false` | Inject the internal event forwarder (also on when `onEvent` is set) |
 | `debugLogTag` | `"PairAiAssistant"` | Log prefix |
 | `resizeToAvoidBottomInset` | `true` | Sets `SOFT_INPUT_ADJUST_RESIZE` on `PairAiActivity` |
 | `htmlLang` | `"ar"` | BCP-47 `lang` on generated HTML |
@@ -120,6 +144,48 @@ setContentView(webView);
 | `allowedNavigationOrigins` | `[baseUrl origin]` | Additional allowed origins |
 
 Pass `host = null` on `PairAiWebView` only if file picker and media permissions are not needed.
+
+`PairAiActivity` cannot receive `onEvent` (the config is passed through an `Intent`). Use `PairAiWebView` or `PairAiFragment` when you need widget events.
+
+## Widget events
+
+Pass `onEvent` to `PairAiWebView` or `PairAiFragment.newInstance`. Setting `onEvent` turns the internal forwarder on automatically.
+
+```kotlin
+PairAiWebView(
+    context = this,
+    config = config,
+    host = this,
+    onEvent = { event ->
+        when (event.type) {
+            "widget:ready" -> { }
+            "widget:close" -> { }
+            "widget:unreadCount" -> {
+                val count = event.data["count"]
+            }
+            else -> Log.d("PairAiEvent", "${event.type} ${event.data}")
+        }
+    },
+)
+```
+
+`PairAiWidgetEvent` fields: `type`, `data`, `origin`, `timestamp`.
+
+Known `type` values (not a closed list — unknown `widget:` / `form:` types are still forwarded):
+
+| `type` | When it fires |
+|--------|----------------|
+| `widget:ready` | Widget iframe finished initializing |
+| `widget:close` | Widget requested to close |
+| `widget:configUpdated` | Widget pushed a config update |
+| `widget:setColor` | Bubble color update |
+| `widget:unreadCount` | Unread badge (`data["count"]`) |
+| `widget:previewMessage` | Preview card while the chat is closed |
+| `widget:dismissPreview` | Preview card dismissed |
+| `widget:requestTokenRefresh` | Widget asked the host to refresh the access token |
+| `form:resize` / `form:submitted` | Form embed resize / submit |
+
+Host-to-widget calls such as `PairAiWidgetSDK.updateMetadata(...)` are not `onEvent` callbacks.
 
 ## Debug logs
 
@@ -150,7 +216,3 @@ cd sdks/android
 ./gradlew :pairai:assembleRelease
 ./gradlew :pairai:test
 ```
-
-## Out of scope
-
-The structured JS → native event listener bridge (`PairAssistantEvents`) is not included in this release. Use `enableDebugBridge` for diagnostics.

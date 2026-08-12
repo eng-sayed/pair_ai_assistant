@@ -41,6 +41,22 @@ final class PairAiHtmlShellTests: XCTestCase {
         XCTAssertTrue(html.contains(embedScript))
         XCTAssertTrue(html.contains("Noto+Sans+Arabic"))
         XCTAssertFalse(html.contains("__PAIR_AI_ASSISTANT_DEBUG__"))
+        XCTAssertFalse(html.contains("__PAIR_AI_ASSISTANT_EVENTS__"))
+    }
+
+    func testEventBridgeScriptInjectedWhenEnabled() throws {
+        let config = try PairAiEmbedConfig(
+            embedScript: embedScript,
+            baseUrl: "http://localhost:3000",
+            enableArabicFontFix: false,
+            enableIframeMediaPermissions: false,
+            enableDebugBridge: false,
+            enableEventBridge: true
+        )
+
+        let html = PairAiHtmlShell.build(config)
+        XCTAssertTrue(html.contains("__PAIR_AI_ASSISTANT_EVENTS__"))
+        XCTAssertTrue(html.contains("http://localhost:3000"))
     }
 
     func testDebugBridgeScriptInjectedWhenEnabled() throws {

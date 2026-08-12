@@ -1,6 +1,6 @@
 name: pair_ai_assistant
 description: Embed the Pair AI assistant widget in Flutter apps with full Android & iOS support for microphone, camera, and file uploads.
-version: 0.1.0
+version: 0.2.0
 repository: https://github.com/eng-sayed/pair_ai_assistant
 homepage: https://github.com/eng-sayed/pair_ai_assistant
 issue_tracker: https://github.com/eng-sayed/pair_ai_assistant/issues

@@ -12,6 +12,7 @@ class PairAiFragment : Fragment() {
     private var config: PairAiEmbedConfig? = null
     private var onDebugLog: ((String) -> Unit)? = null
     private var onPageFinished: ((String) -> Unit)? = null
+    private var onEvent: ((PairAiWidgetEvent) -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +31,7 @@ class PairAiFragment : Fragment() {
             host = this,
             onDebugLog = onDebugLog,
             onPageFinished = onPageFinished,
+            onEvent = onEvent,
         )
     }
 
@@ -42,6 +44,7 @@ class PairAiFragment : Fragment() {
             config: PairAiEmbedConfig,
             onDebugLog: ((String) -> Unit)? = null,
             onPageFinished: ((String) -> Unit)? = null,
+            onEvent: ((PairAiWidgetEvent) -> Unit)? = null,
         ): PairAiFragment {
             return PairAiFragment().apply {
                 arguments = Bundle().apply {
@@ -49,6 +52,7 @@ class PairAiFragment : Fragment() {
                 }
                 this.onDebugLog = onDebugLog
                 this.onPageFinished = onPageFinished
+                this.onEvent = onEvent
             }
         }
     }

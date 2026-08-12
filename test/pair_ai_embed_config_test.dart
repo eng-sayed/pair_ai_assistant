@@ -37,6 +37,7 @@ void main() {
     expect(config.embedScript, '<script>ok</script>');
     expect(config.baseUrl, 'https://widgets-test.trypair.ai');
     expect(config.enableDebugBridge, isTrue);
+    expect(config.enableEventBridge, isFalse);
     expect(
       config.allowedNavigationOrigins,
       contains('https://widgets-test.trypair.ai'),

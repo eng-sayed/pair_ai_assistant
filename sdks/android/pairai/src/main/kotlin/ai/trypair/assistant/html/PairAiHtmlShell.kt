@@ -5,7 +5,8 @@ import ai.trypair.assistant.PairAiEmbedConfig
 /** Builds the HTML document that wraps a verbatim Pair embed script. */
 object PairAiHtmlShell {
     /** Generates a complete HTML page for [config]. */
-    fun build(config: PairAiEmbedConfig): String {
+    @JvmOverloads
+    fun build(config: PairAiEmbedConfig, enableEventBridge: Boolean = config.enableEventBridge): String {
         val head = StringBuilder()
             .appendLine("<meta charset=\"utf-8\">")
             .appendLine("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">")
@@ -39,14 +40,18 @@ object PairAiHtmlShell {
 
         config.extraHeadHtml?.let { head.appendLine(it) }
 
+        val injectEvents = enableEventBridge
         val bodyPrefix = StringBuilder()
-        if (config.enableDebugBridge || config.enableIframeMediaPermissions) {
+        if (config.enableDebugBridge || config.enableIframeMediaPermissions || injectEvents) {
             bodyPrefix.appendLine("<script>")
             if (config.enableIframeMediaPermissions) {
                 bodyPrefix.append(PairAiEmbedScripts.iframeMediaPermissionsJs)
             }
             if (config.enableDebugBridge) {
                 bodyPrefix.append(PairAiEmbedScripts.debugBridgeJs)
+            }
+            if (injectEvents) {
+                bodyPrefix.append(PairAiEmbedScripts.eventBridgeJs(config.allowedNavigationOrigins))
             }
             bodyPrefix.append("\n</script>\n")
         }

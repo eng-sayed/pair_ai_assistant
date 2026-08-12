@@ -4,7 +4,13 @@ import 'pair_ai_embed_scripts.dart';
 /// Builds the HTML document that wraps a verbatim Pair embed script.
 abstract final class PairAiHtmlShell {
   /// Generates a complete HTML page for [config].
-  static String build(PairAiEmbedConfig config) {
+  ///
+  /// [enableEventBridge] overrides [PairAiEmbedConfig.enableEventBridge] when
+  /// set, so a host `onEvent` callback can turn the bridge on automatically.
+  static String build(
+    PairAiEmbedConfig config, {
+    bool? enableEventBridge,
+  }) {
     final StringBuffer head = StringBuffer()
       ..writeln('<meta charset="utf-8">')
       ..writeln(
@@ -44,14 +50,22 @@ abstract final class PairAiHtmlShell {
       head.writeln(config.extraHeadHtml);
     }
 
+    final bool injectEvents = enableEventBridge ?? config.enableEventBridge;
     final StringBuffer bodyPrefix = StringBuffer();
-    if (config.enableDebugBridge || config.enableIframeMediaPermissions) {
+    if (config.enableDebugBridge ||
+        config.enableIframeMediaPermissions ||
+        injectEvents) {
       bodyPrefix.writeln('<script>');
       if (config.enableIframeMediaPermissions) {
         bodyPrefix.writeln(PairAiEmbedScripts.iframeMediaPermissionsJs);
       }
       if (config.enableDebugBridge) {
         bodyPrefix.writeln(PairAiEmbedScripts.debugBridgeJs);
+      }
+      if (injectEvents) {
+        bodyPrefix.writeln(
+          PairAiEmbedScripts.eventBridgeJs(config.allowedNavigationOrigins),
+        );
       }
       bodyPrefix.writeln('</script>');
     }

@@ -32,6 +32,9 @@ class DemoScreen extends StatelessWidget {
         title: const Text('Pair AI Assistant — Demo'),
       ),
       onDebugLog: debugPrint,
+      onEvent: (PairAiWidgetEvent event) {
+        debugPrint('[PairAiEvent] ${event.type} ${event.data}');
+      },
     );
   }
 }

@@ -9,6 +9,7 @@ public final class PairAiWebView: UIView {
     private let uiDelegate: PairAiWKUIDelegate
     private let navigationDelegate: PairAiWKNavigationDelegate
     private var debugBridge: PairAiDebugBridge?
+    private var eventBridge: PairAiEventBridge?
 
     /// Creates a WebView configured for the given embed settings.
     ///
@@ -16,10 +17,12 @@ public final class PairAiWebView: UIView {
     ///   - config: Validated embed configuration.
     ///   - onDebugLog: Optional callback for debug log lines.
     ///   - onPageFinished: Called when the HTML shell finishes loading.
+    ///   - onEvent: Called when the widget iframe posts a `widget:` or `form:` event.
     public init(
         config: PairAiEmbedConfig,
         onDebugLog: (@Sendable (String) -> Void)? = nil,
-        onPageFinished: ((URL) -> Void)? = nil
+        onPageFinished: ((URL) -> Void)? = nil,
+        onEvent: ((PairAiWidgetEvent) -> Void)? = nil
     ) {
         self.config = config
         self.logger = PairAiLogger(config: config, onDebugLog: onDebugLog)
@@ -35,6 +38,17 @@ public final class PairAiWebView: UIView {
             let bridge = PairAiDebugBridge(logger: logger)
             self.debugBridge = bridge
             webConfiguration.userContentController.add(bridge, name: "PairAssistantDebug")
+        } else {
+            self.debugBridge = nil
+        }
+
+        let enableEventBridge = config.enableEventBridge || onEvent != nil
+        if enableEventBridge {
+            let bridge = PairAiEventBridge(onEvent: onEvent)
+            self.eventBridge = bridge
+            webConfiguration.userContentController.add(bridge, name: "PairAssistantEvents")
+        } else {
+            self.eventBridge = nil
         }
 
         self.uiDelegate = PairAiWKUIDelegate(logger: logger)
@@ -84,9 +98,11 @@ public final class PairAiWebView: UIView {
 
     deinit {
         navigationDelegate.dispose()
-        if let debugBridge {
+        if debugBridge != nil {
             webView.configuration.userContentController.removeScriptMessageHandler(forName: "PairAssistantDebug")
-            _ = debugBridge
+        }
+        if eventBridge != nil {
+            webView.configuration.userContentController.removeScriptMessageHandler(forName: "PairAssistantEvents")
         }
     }
 
@@ -96,7 +112,7 @@ public final class PairAiWebView: UIView {
     }
 
     private func loadEmbed() {
-        let html = PairAiHtmlShell.build(config)
+        let html = PairAiHtmlShell.build(config, enableEventBridge: eventBridge != nil)
         guard let baseURL = URL(string: config.baseUrl) else {
             logger.log("config:error: invalid baseUrl \(config.baseUrl)")
             return

@@ -10,15 +10,18 @@ public final class PairAiViewController: UIViewController {
     ///   - config: Validated embed configuration.
     ///   - onDebugLog: Optional callback for debug log lines.
     ///   - onPageFinished: Called when the HTML shell finishes loading.
+    ///   - onEvent: Called when the widget iframe posts a `widget:` or `form:` event.
     public init(
         config: PairAiEmbedConfig,
         onDebugLog: (@Sendable (String) -> Void)? = nil,
-        onPageFinished: ((URL) -> Void)? = nil
+        onPageFinished: ((URL) -> Void)? = nil,
+        onEvent: ((PairAiWidgetEvent) -> Void)? = nil
     ) {
         self.pairWebView = PairAiWebView(
             config: config,
             onDebugLog: onDebugLog,
-            onPageFinished: onPageFinished
+            onPageFinished: onPageFinished,
+            onEvent: onEvent
         )
         super.init(nibName: nil, bundle: nil)
     }

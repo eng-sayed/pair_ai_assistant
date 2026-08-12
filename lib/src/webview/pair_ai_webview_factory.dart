@@ -6,6 +6,7 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import '../android/pair_ai_android_file_selector.dart';
 import '../config/pair_ai_embed_config.dart';
+import '../events/pair_ai_widget_event.dart';
 import '../html/pair_ai_embed_scripts.dart';
 import '../html/pair_ai_html_shell.dart';
 import '../utils/pair_ai_logger.dart';
@@ -18,6 +19,7 @@ class PairAiWebViewFactory {
     required this.config,
     required this.logger,
     required this.onPageFinished,
+    this.onEvent,
     PairAiPermissionHandler? permissionHandler,
     PairAiAndroidFileSelector? androidFileSelector,
   })  : _permissionHandler =
@@ -28,6 +30,7 @@ class PairAiWebViewFactory {
   final PairAiEmbedConfig config;
   final PairAiLogger logger;
   final void Function(String url) onPageFinished;
+  final void Function(PairAiWidgetEvent event)? onEvent;
   final PairAiPermissionHandler _permissionHandler;
   final PairAiAndroidFileSelector _androidFileSelector;
   bool _disposed = false;
@@ -83,6 +86,21 @@ class PairAiWebViewFactory {
         );
     }
 
+    final bool enableEventBridge = config.enableEventBridge || onEvent != null;
+    if (enableEventBridge) {
+      controller.addJavaScriptChannel(
+        'PairAssistantEvents',
+        onMessageReceived: (JavaScriptMessage message) {
+          final PairAiWidgetEvent? event =
+              PairAiWidgetEvent.tryParse(message.message);
+          if (event == null) {
+            return;
+          }
+          onEvent?.call(event);
+        },
+      );
+    }
+
     final PairAiNavigationGuard navigationGuard = PairAiNavigationGuard(
       config.allowedNavigationOrigins,
     );
@@ -120,7 +138,10 @@ class PairAiWebViewFactory {
       ),
     );
 
-    final String html = PairAiHtmlShell.build(config);
+    final String html = PairAiHtmlShell.build(
+      config,
+      enableEventBridge: enableEventBridge,
+    );
     controller.loadHtmlString(html, baseUrl: config.baseUrl);
 
     return controller;

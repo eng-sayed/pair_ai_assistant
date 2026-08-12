@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../config/pair_ai_embed_config.dart';
+import '../events/pair_ai_widget_event.dart';
 import '../utils/pair_ai_logger.dart';
 import '../webview/pair_ai_webview_factory.dart';
 
@@ -17,6 +18,7 @@ class PairAiWidget extends StatefulWidget {
     required this.config,
     this.onDebugLog,
     this.onPageFinished,
+    this.onEvent,
   });
 
   /// Embed configuration including the verbatim Pair script.
@@ -27,6 +29,9 @@ class PairAiWidget extends StatefulWidget {
 
   /// Called when the HTML shell finishes loading.
   final void Function(String url)? onPageFinished;
+
+  /// Called when the widget iframe posts a `widget:` or `form:` event.
+  final void Function(PairAiWidgetEvent event)? onEvent;
 
   @override
   State<PairAiWidget> createState() => _PairAiWidgetState();
@@ -45,6 +50,7 @@ class _PairAiWidgetState extends State<PairAiWidget> {
       config: widget.config,
       logger: _logger,
       onPageFinished: (String url) => widget.onPageFinished?.call(url),
+      onEvent: widget.onEvent,
     );
     _controller = _factory.create();
     WidgetsBinding.instance.addPostFrameCallback((_) {

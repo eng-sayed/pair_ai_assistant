@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 /// JavaScript helpers injected into the HTML shell before the embed script.
 abstract final class PairAiEmbedScripts {
   /// Adds `allow="microphone; camera"` on dynamically created iframes.
@@ -324,6 +326,66 @@ abstract final class PairAiEmbedScripts {
   post('debug:installed');
 })();
 ''';
+
+  /// Forwards origin-checked widget/form postMessage events to native.
+  static String eventBridgeJs(Iterable<String> allowedOrigins) {
+    final String originsJson = jsonEncode(allowedOrigins.toList());
+    return '''
+(function () {
+  if (window.__PAIR_AI_ASSISTANT_EVENTS__) return;
+  window.__PAIR_AI_ASSISTANT_EVENTS__ = true;
+
+  var allowedOrigins = $originsJson;
+
+  function isAllowed(origin) {
+    if (!origin) return false;
+    for (var i = 0; i < allowedOrigins.length; i++) {
+      if (allowedOrigins[i] === origin) return true;
+    }
+    return false;
+  }
+
+  function normalize(data) {
+    if (data == null) return null;
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch (e) { return null; }
+    }
+    if (typeof data !== 'object') return null;
+    return data;
+  }
+
+  function postNative(message) {
+    try {
+      if (window.PairAssistantEvents && window.PairAssistantEvents.postMessage) {
+        window.PairAssistantEvents.postMessage(message);
+        return;
+      }
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.PairAssistantEvents) {
+        window.webkit.messageHandlers.PairAssistantEvents.postMessage(message);
+      }
+    } catch (e) {}
+  }
+
+  window.addEventListener('message', function (event) {
+    if (!isAllowed(event.origin)) return;
+    var data = normalize(event.data);
+    if (!data) return;
+    var type = data.type;
+    if (typeof type !== 'string') return;
+    if (type.indexOf('widget:') !== 0 && type.indexOf('form:') !== 0) return;
+
+    try {
+      postNative(JSON.stringify({
+        type: type,
+        data: data,
+        origin: event.origin,
+        ts: new Date().toISOString()
+      }));
+    } catch (e) {}
+  });
+})();
+''';
+  }
 
   /// Re-applies Arabic font CSS in the document and child iframes.
   static const String arabicFontFixJs = r'''

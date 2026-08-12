@@ -3,6 +3,7 @@ package ai.trypair.assistant
 import ai.trypair.assistant.html.PairAiHtmlShell
 import ai.trypair.assistant.util.PairAiLogger
 import ai.trypair.assistant.webview.PairAiDebugBridge
+import ai.trypair.assistant.webview.PairAiEventBridge
 import ai.trypair.assistant.webview.PairAiFileChooserHelper
 import ai.trypair.assistant.webview.PairAiPermissionHelper
 import ai.trypair.assistant.webview.PairAiWebChromeClient
@@ -28,6 +29,7 @@ class PairAiWebView @JvmOverloads constructor(
     defStyleAttr: Int = 0,
     private val onDebugLog: ((String) -> Unit)? = null,
     private val onPageFinished: ((String) -> Unit)? = null,
+    private val onEvent: ((PairAiWidgetEvent) -> Unit)? = null,
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
     private val logger = PairAiLogger(config, onDebugLog)
@@ -84,12 +86,18 @@ class PairAiWebView @JvmOverloads constructor(
             WebView.setWebContentsDebuggingEnabled(true)
         }
 
+        val enableEventBridge = config.enableEventBridge || onEvent != null
+        if (enableEventBridge) {
+            webView.addJavascriptInterface(PairAiEventBridge(onEvent), "PairAssistantEvents")
+        }
+
         addView(webView)
         loadEmbed()
     }
 
     private fun loadEmbed() {
-        val html = PairAiHtmlShell.build(config)
+        val enableEventBridge = config.enableEventBridge || onEvent != null
+        val html = PairAiHtmlShell.build(config, enableEventBridge = enableEventBridge)
         webView.loadDataWithBaseURL(config.baseUrl, html, "text/html", "utf-8", null)
     }
 

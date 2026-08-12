@@ -1,6 +1,6 @@
 # pair_ai_assistant
 
-**v0.1.0** | MIT | Android & iOS | Flutter >=3.22
+**v0.2.0** | MIT | Android & iOS | Flutter >=3.22
 
 Embed the **Pair AI assistant widget** in any Flutter app via a `WebView`. Paste the Pair embed `<script>` **verbatim** — the package handles microphone permissions, camera capture, file uploads (Android bridge + iOS native picker), Arabic font rendering, and iframe media permissions.
 
@@ -20,6 +20,7 @@ Pair ships a web embed script for browsers. Mobile apps need a native WebView br
 - Arabic font fix (Noto Sans Arabic)
 - Automatic iframe `allow="microphone; camera"`
 - Optional debug bridge (`PairAssistantDebug` channel)
+- Optional widget event callback (`onEvent`) for `widget:` / `form:` messages
 
 ## Installation
 
@@ -27,7 +28,7 @@ Pair ships a web embed script for browsers. Mobile apps need a native WebView br
 
 ```yaml
 dependencies:
-  pair_ai_assistant: ^0.1.0
+  pair_ai_assistant: ^0.2.0
 ```
 
 ### Path dependency (monorepo)
@@ -95,6 +96,7 @@ See also: [`templates/ios_info_plist_snippet.xml`](templates/ios_info_plist_snip
 ## Minimal usage
 
 ```dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pair_ai_assistant/pair_ai_assistant.dart';
 
@@ -135,6 +137,9 @@ class SupportScreen extends StatelessWidget {
         enableDebugBridge: false,
       ),
       appBar: AppBar(title: const Text('Support')),
+      onEvent: (PairAiWidgetEvent event) {
+        debugPrint('[PairAiEvent] ${event.type} ${event.data}');
+      },
     );
   }
 }
@@ -160,12 +165,61 @@ class SupportScreen extends StatelessWidget {
 | `enableArabicFontFix` | `bool` | `true` | Load Noto Sans Arabic |
 | `enableIframeMediaPermissions` | `bool` | `true` | Inject iframe `allow` attributes |
 | `enableDebugBridge` | `bool` | `false` | Bridge logs to Dart |
+| `enableEventBridge` | `bool` | `false` | Inject the internal event forwarder (also on when `onEvent` is set) |
 | `debugLogTag` | `String` | `PairAiAssistant` | Log prefix |
 | `resizeToAvoidBottomInset` | `bool` | `true` | Scaffold keyboard resize |
 | `htmlLang` | `String` | `ar` | HTML `lang` attribute (BCP 47, e.g. `ar`, `en`) |
 | `extraHeadHtml` | `String?` | `null` | Extra `<head>` markup (trusted content only) |
 | `restrictNavigation` | `bool` | `true` | Block WebView navigation outside allowed origins |
 | `allowedNavigationOrigins` | `List<String>?` | `baseUrl` origin | Extra origins for WebView navigation |
+
+## Widget events
+
+Pass `onEvent` to `PairAiWidget` or `PairAiWidgetScreen`. Setting `onEvent` turns the internal forwarder on automatically — you do not need `enableEventBridge: true` unless you want the bridge without a callback.
+
+```dart
+PairAiWidgetScreen(
+  config: config,
+  onEvent: (PairAiWidgetEvent event) {
+    switch (event.type) {
+      case 'widget:ready':
+        break;
+      case 'widget:close':
+        break;
+      case 'widget:unreadCount':
+        final count = event.data['count'];
+        break;
+      default:
+        debugPrint('[PairAiEvent] ${event.type} ${event.data}');
+    }
+  },
+)
+```
+
+`PairAiWidgetEvent` fields:
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `type` | `String` | Event name, e.g. `widget:ready` |
+| `data` | `Map<String, Object?>` | Original iframe payload |
+| `origin` | `String` | Sender origin |
+| `timestamp` | `DateTime` | Bridge timestamp when present |
+
+Known `type` values from the Pair widget SDK (not a closed list — unknown `widget:` / `form:` types are still forwarded):
+
+| `type` | When it fires |
+|--------|----------------|
+| `widget:ready` | Widget iframe finished initializing |
+| `widget:close` | Widget requested to close |
+| `widget:configUpdated` | Widget pushed a config update (`data['config']`) |
+| `widget:setColor` | Bubble color update (`data['color']`) |
+| `widget:unreadCount` | Unread badge (`data['count']`) |
+| `widget:previewMessage` | Preview card while the chat is closed |
+| `widget:dismissPreview` | Preview card dismissed |
+| `widget:requestTokenRefresh` | Widget asked the host to refresh the access token |
+| `form:resize` / `form:submitted` | Form embed resize / submit |
+
+Host-to-widget calls such as `PairAiWidgetSDK.updateMetadata(...)` are not `onEvent` callbacks. Those are commands you send into the WebView, not events the widget posts out.
 
 ## Troubleshooting
 
@@ -202,7 +256,7 @@ class SupportScreen extends StatelessWidget {
 - iOS Simulator microphone may record silence; test on a real device.
 - The package does not parse or validate script contents.
 
-## Roadmap (v0.2)
+## Roadmap
 
 - Delegate-based file picker override
 - `PairAiEmbedConfig.fromAsset()` for script files

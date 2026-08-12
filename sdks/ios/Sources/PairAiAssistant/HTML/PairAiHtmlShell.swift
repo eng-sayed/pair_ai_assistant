@@ -3,7 +3,7 @@ import Foundation
 /// Builds the HTML document that wraps a verbatim Pair embed script.
 public enum PairAiHtmlShell {
     /// Generates a complete HTML page for [config].
-    public static func build(_ config: PairAiEmbedConfig) -> String {
+    public static func build(_ config: PairAiEmbedConfig, enableEventBridge: Bool? = nil) -> String {
         var head = ""
         head += "<meta charset=\"utf-8\">\n"
         head += "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\n"
@@ -32,14 +32,20 @@ public enum PairAiHtmlShell {
             head += extraHeadHtml + "\n"
         }
 
+        let injectEvents = enableEventBridge ?? config.enableEventBridge
         var bodyPrefix = ""
-        if config.enableDebugBridge || config.enableIframeMediaPermissions {
+        if config.enableDebugBridge || config.enableIframeMediaPermissions || injectEvents {
             bodyPrefix += "<script>\n"
             if config.enableIframeMediaPermissions {
                 bodyPrefix += PairAiEmbedScripts.iframeMediaPermissionsJs
             }
             if config.enableDebugBridge {
                 bodyPrefix += PairAiEmbedScripts.debugBridgeJs
+            }
+            if injectEvents {
+                bodyPrefix += PairAiEmbedScripts.eventBridgeJs(
+                    allowedOrigins: Array(config.allowedNavigationOrigins)
+                )
             }
             bodyPrefix += "\n</script>\n"
         }

@@ -15,6 +15,10 @@ class PairAiHtmlShellTest {
     fun embedScripts_constantsAreNonEmpty() {
         assertTrue(PairAiEmbedScripts.iframeMediaPermissionsJs.contains("__PAIR_AI_ASSISTANT_IFRAME__"))
         assertTrue(PairAiEmbedScripts.debugBridgeJs.contains("__PAIR_AI_ASSISTANT_DEBUG__"))
+        assertTrue(
+            PairAiEmbedScripts.eventBridgeJs(listOf("http://localhost:3000"))
+                .contains("__PAIR_AI_ASSISTANT_EVENTS__"),
+        )
         assertTrue(PairAiEmbedScripts.arabicFontFixJs.contains("pair-ai-assistant-ar-font-fix"))
     }
 
@@ -63,6 +67,22 @@ class PairAiHtmlShellTest {
         assertTrue(html.contains(EMBED_SCRIPT))
         assertTrue(html.contains("Noto+Sans+Arabic"))
         assertTrue(!html.contains("__PAIR_AI_ASSISTANT_DEBUG__"))
+        assertTrue(!html.contains("__PAIR_AI_ASSISTANT_EVENTS__"))
+    }
+
+    @Test
+    fun build_includesEventBridgeWhenEnabled() {
+        val config = PairAiEmbedConfig.create(
+            embedScript = EMBED_SCRIPT,
+            baseUrl = "http://localhost:3000",
+            enableArabicFontFix = false,
+            enableDebugBridge = false,
+            enableIframeMediaPermissions = false,
+            enableEventBridge = true,
+        )
+        val html = PairAiHtmlShell.build(config)
+        assertTrue(html.contains("__PAIR_AI_ASSISTANT_EVENTS__"))
+        assertTrue(html.contains("localhost"))
     }
 
     private fun readGoldenFixture(): String {
