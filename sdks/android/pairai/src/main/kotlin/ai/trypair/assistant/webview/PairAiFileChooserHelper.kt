@@ -174,7 +174,7 @@ class PairAiFileChooserHelper(
         )
         return FileProvider.getUriForFile(
             context,
-            FILE_PROVIDER_AUTHORITY,
+            "${context.packageName}.pairai.fileprovider",
             file,
         )
     }
@@ -213,7 +213,4 @@ class PairAiFileChooserHelper(
         return acceptTypes.all { isImageMimeOrExtension(it) }
     }
 
-    companion object {
-        const val FILE_PROVIDER_AUTHORITY = "ai.trypair.assistant.fileprovider"
-    }
 }

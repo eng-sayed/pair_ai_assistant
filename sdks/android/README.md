@@ -207,7 +207,18 @@ When `enableDebugBridge = true`, look for `[PairAiAssistant]` in logcat:
 
 **File upload fails** — Ensure `PairAiWebView` receives a non-null `host` (`Activity` or `Fragment`).
 
-**Camera capture fails** — FileProvider authority `ai.trypair.assistant.fileprovider` is declared in the library manifest; do not override unless you know what you're doing.
+**Camera capture fails** — FileProvider authority is `${applicationId}.pairai.fileprovider`. Do not override it unless you know what you are doing.
+
+## Example
+
+A runnable sample app is in [`example/`](example/). It depends on the local `:pairai` module, logs `onEvent` to logcat, and includes a **Send window.postMessage** button that injects `window.postMessage({ type: 'widget:demo', ... })` so you can see the event on screen.
+
+```bash
+cd sdks/android
+./gradlew :example:installDebug
+```
+
+Or open `sdks/android` in Android Studio and run the `example` configuration on an emulator. Tap the button after the page loads; the label at the top should show `widget:demo`. Real widget events such as `widget:ready` also appear there.
 
 ## Building
 

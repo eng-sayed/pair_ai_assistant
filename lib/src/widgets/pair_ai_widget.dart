@@ -34,13 +34,22 @@ class PairAiWidget extends StatefulWidget {
   final void Function(PairAiWidgetEvent event)? onEvent;
 
   @override
-  State<PairAiWidget> createState() => _PairAiWidgetState();
+  State<PairAiWidget> createState() => PairAiWidgetState();
 }
 
-class _PairAiWidgetState extends State<PairAiWidget> {
+/// State for [PairAiWidget], including helpers to run JavaScript in the WebView.
+class PairAiWidgetState extends State<PairAiWidget> {
   late final WebViewController _controller;
   late final PairAiLogger _logger;
   late final PairAiWebViewFactory _factory;
+
+  /// Runs [javaScript] in the embed WebView.
+  ///
+  /// Example apps use this to send `window.postMessage(...)` and exercise
+  /// [PairAiWidget.onEvent].
+  Future<void> runJavaScript(String javaScript) {
+    return _controller.runJavaScript(javaScript);
+  }
 
   @override
   void initState() {

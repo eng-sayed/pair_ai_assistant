@@ -13,8 +13,8 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="ai.trypair.assistant.fileprovider"
+            android:name=".webview.PairAiFileProvider"
+            android:authorities="${applicationId}.pairai.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

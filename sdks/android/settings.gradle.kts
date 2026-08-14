@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "pair-ai-assistant-android"
 include(":pairai")
+include(":example")
